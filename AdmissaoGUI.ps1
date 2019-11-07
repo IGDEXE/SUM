@@ -1,5 +1,5 @@
 # RPA GUI - Admissão
-# Ivo Dias
+# Ivo Dias e Leonardo Belli
 # Versao 12.0
 
 # Criacao do formulario principal
@@ -19,8 +19,25 @@ function Limpar-Tela {
     $cbxSetores.selectedItem = ""
 }
 
+# Verifica as OUs
+function Listar-OUs {
+    $nomeDominio = (Get-ADDomain).Name # Recebe o nome do Dominio
+    $dominioCompleto = (Get-ADDomain).DistinguishedName # Recebe o endereco completo
+    $ouBase = "OU=$nomeDominio,$dominioCompleto" # Define a OU base para a pesquisa
+    $OUs = Get-ADOrganizationalUnit -SearchBase $ouBase -Filter * -SearchScope OneLevel # Busca todas as OU dentro dela
+    $nomeOUs = $OUs.Name # Recupera o nome das OUs
+    return $nomeOUs # Retorna o valor
+}
+
+# Recebe o nome dos usuarios
+function Listar-Usuarios {
+    $nomeUsuarios = (Get-ADUser -Filter *).samaccountname # Recebe o login de todos os usuarios
+    $nomeUsuarios = $nomeUsuarios | sort-object # Organiza em ordem alfabetica
+    return $nomeUsuarios # Retorna o valor
+}
+
 # Configura o formulario principal
-$GUI.Text ='S.U.M - Admissão' # Titulo
+$GUI.Text ='S.U.M - Admissao' # Titulo
 $GUI.AutoSize = $true # Configura para aumentar caso necessario
 $GUI.StartPosition = 'CenterScreen' # Inicializa no centro da tela
 
@@ -31,7 +48,7 @@ Unblock-File -Path $moduloAdmissao # Desbloqueia o arquivo
 Import-Module $moduloAdmissao -Force # Carrega o modulo
 $logPadrao = "Ultimo retorno:`r`n`r`n" # Configura o log padrao ----------------------------------------------------------
 
-# Label do texto - Usuario ID
+# Label do texto - Usuário ID
 $lblPrimeiroNomeUsuario = New-Object System.Windows.Forms.Label # Cria a label
 $lblPrimeiroNomeUsuario.Text = "Primeiro nome do usuario:" # Define um texto para ela
 $lblPrimeiroNomeUsuario.Location  = New-Object System.Drawing.Point(0,10) # Define em qual coordenada da tela vai ser desenhado
@@ -44,14 +61,14 @@ $txtPrimeiroNomeUsuario.Width = 302 # Configura o tamanho
 $txtPrimeiroNomeUsuario.Location  = New-Object System.Drawing.Point(140,10) # Define em qual coordenada da tela vai ser desenhado
 $GUI.Controls.Add($txtPrimeiroNomeUsuario) # Adiciona ao formulario principal
 
-# Label do texto - Usuario ID
+# Label do texto - Usuário ID
 $lblSobrenomeUsuario = New-Object System.Windows.Forms.Label # Cria a label
 $lblSobrenomeUsuario.Text = "Sobrenome completo do usuario:" # Define um texto para ela
 $lblSobrenomeUsuario.Location  = New-Object System.Drawing.Point(0,40) # Define em qual coordenada da tela vai ser desenhado
 $lblSobrenomeUsuario.AutoSize = $true # Configura tamanho automatico
 $GUI.Controls.Add($lblSobrenomeUsuario) # Adiciona ao formulario principal
 
-# Caixa de texto para receber a identificação do usuario a ser deligado
+# Caixa de texto para receber a identificação do usuário a ser deligado
 $txtSobrenomeUsuario = New-Object System.Windows.Forms.TextBox # Cria a caixa de texto
 $txtSobrenomeUsuario.Width = 272 # Configura o tamanho
 $txtSobrenomeUsuario.Location  = New-Object System.Drawing.Point(170,40) # Define em qual coordenada da tela vai ser desenhado
@@ -72,15 +89,19 @@ $GUI.Controls.Add($txtNomeUsuarioAD) # Adiciona ao formulario principal
 
 # Label do texto - Usuário ID
 $lblUsuarioReferencia = New-Object System.Windows.Forms.Label # Cria a label
-$lblUsuarioReferencia.Text = "Identificação do usuario de referencia (nome.sobrenome):" # Define um texto para ela
+$lblUsuarioReferencia.Text = "Usuario de referencia (nome.sobrenome):" # Define um texto para ela
 $lblUsuarioReferencia.Location  = New-Object System.Drawing.Point(0,100) # Define em qual coordenada da tela vai ser desenhado
 $lblUsuarioReferencia.AutoSize = $true # Configura tamanho automatico
 $GUI.Controls.Add($lblUsuarioReferencia) # Adiciona ao formulario principal
 
 # Caixa de texto para receber a identificação do usuário a ser deligado
-$txtUsuarioReferencia = New-Object System.Windows.Forms.TextBox # Cria a caixa de texto
-$txtUsuarioReferencia.Width = 150 # Configura o tamanho
-$txtUsuarioReferencia.Location  = New-Object System.Drawing.Point(292,100) # Define em qual coordenada da tela vai ser desenhado
+$txtUsuarioReferencia = New-Object System.Windows.Forms.ComboBox # Cria a caixa de texto
+$txtUsuarioReferencia.Width = 229 # Configura o tamanho
+$txtUsuarioReferencia.Location  = New-Object System.Drawing.Point(213,100) # Define em qual coordenada da tela vai ser desenhado
+$Usuarios = Listar-Usuarios # Recebe os setores
+foreach ($usuario in $Usuarios) {
+    $txtUsuarioReferencia.Items.Add($usuario) # Adiciona como opcao cada um dos usuarios
+}
 $GUI.Controls.Add($txtUsuarioReferencia) # Adiciona ao formulario principal
 
 # Label do texto - Usuário ID
@@ -91,9 +112,11 @@ $lblContratoUsuario.AutoSize = $true # Configura tamanho automatico
 $GUI.Controls.Add($lblContratoUsuario) # Adiciona ao formulario principal
 
 # Caixa de texto para receber a identificação do usuário a ser deligado
-$txtContratoUsuario = New-Object System.Windows.Forms.TextBox # Cria a caixa de texto
+$txtContratoUsuario = New-Object System.Windows.Forms.ComboBox # Cria a caixa de texto
 $txtContratoUsuario.Width = 297 # Configura o tamanho
 $txtContratoUsuario.Location  = New-Object System.Drawing.Point(145,130) # Define em qual coordenada da tela vai ser desenhado
+$txtContratoUsuario.Items.Add("CLT") # Adiciona como opcao cada um dos tipos de contratos
+$txtContratoUsuario.Items.Add("PJ") # Adiciona como opcao cada um dos tipos de contratos
 $GUI.Controls.Add($txtContratoUsuario) # Adiciona ao formulario principal
 
 # Label do texto - Usuário ID
@@ -104,8 +127,11 @@ $lblCargoUsuario.AutoSize = $true # Configura tamanho automatico
 $GUI.Controls.Add($lblCargoUsuario) # Adiciona ao formulario principal
 
 # Caixa de texto para receber a identificação do usuário a ser deligado
-$txtCargoUsuario = New-Object System.Windows.Forms.TextBox # Cria a caixa de texto
+$txtCargoUsuario = New-Object System.Windows.Forms.ComboBox # Cria a caixa de texto
 $txtCargoUsuario.Width = 347 # Configura o tamanho
+$txtCargoUsuario.Items.Add("Alocado") # Adiciona como opcao um tipo de cargo
+$txtCargoUsuario.Items.Add("Operacional") # Adiciona como opcao um tipo de cargo
+$txtCargoUsuario.Items.Add("Gerencia") # Adiciona como opcao um tipo de cargo
 $txtCargoUsuario.Location  = New-Object System.Drawing.Point(95,160) # Define em qual coordenada da tela vai ser desenhado
 $GUI.Controls.Add($txtCargoUsuario) # Adiciona ao formulario principal
 
@@ -120,7 +146,7 @@ $GUI.Controls.Add($lblAreaUsuario) # Adiciona ao formulario principal
 $cbxSetores = New-Object System.Windows.Forms.ComboBox # Cria a Combobox dos setores
 $cbxSetores.Width = 354 # Configura o tamanho
 $cbxSetores.Location  = New-Object System.Drawing.Point(88,190) # Define a localizacao
-$Setores = get-content "\\servidor\Config\ouList.txt" # Recebe os setores da lista no caminho informado
+$Setores = Listar-OUs # Recebe os setores
 foreach ($setor in $Setores) {
     $cbxSetores.Items.Add($setor) # Adiciona como opcao cada um dos setores
 }
