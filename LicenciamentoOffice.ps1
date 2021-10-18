@@ -54,7 +54,7 @@ $arquivoOffice = "$pastaOffice\$identificacaoOffice" # Define o caminho do arqui
 $data = Get-Date # Pega a data atual
 
 # Cria os Logs
-$SUM = "\\srsvm030.seniorsolution.com.br\Scripts\SRE\SUM" # Define o caminho padrao da pasta de Logs
+$SUM = "\\servidor\SUM" # Define o caminho padrao da pasta de Logs
 $pastaAdmitidos = "$SUM\Admitidos" # Configura a pasta para os Desligamentos
 $identificacao = Get-Date -Format LOG@ddMMyyyy # Cria um codigo baseado no dia mes ano (02102019)
 $identificacao += ".txt" # Atribui um tipo ao log
@@ -76,7 +76,7 @@ Validar-Pasta $pastaOffice
 Validar-Pasta $pastaConfig
 
 # Credenciais do Office
-$identificador = "SEC@311020190706"
+$identificador = "Verificar script de criacao de credenciais"
 $usuarioSUM = "SUM@dominio.com.br"
 $PasswordFile = "$pastaConfig\$identificador.pass"
 $key = Get-Content "$pastaConfig\$identificador.key"
